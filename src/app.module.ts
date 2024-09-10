@@ -9,9 +9,18 @@ import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { ConversationsController } from './conversations/conversations.controller';
 import { MessagesController } from './messages/messages.controller';
+import { UtilService } from './util.service';
+import { EmailService } from './email/email.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './users/schema/user-schema';
 
 @Module({
-  imports: [],
+  imports: [
+    MongooseModule.forRoot(
+      'mongodb+srv://dewmythdev:12345678abcdef@cluster0.xzp4w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+    ),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
   controllers: [
     AppController,
     UsersController,
@@ -25,6 +34,8 @@ import { MessagesController } from './messages/messages.controller';
     MessagesService,
     ConversationsService,
     AuthService,
+    UtilService,
+    EmailService,
   ],
 })
 export class AppModule {}
