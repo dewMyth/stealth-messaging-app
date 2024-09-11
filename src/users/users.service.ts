@@ -30,6 +30,20 @@ export class UsersService {
     return user;
   }
 
+  async getUserById(id) {
+    const user = await this.userModel.findById(id).catch((err) => {
+      throw new InternalServerErrorException(
+        `Failed to fetch user: ${err.message}`,
+      );
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user;
+  }
+
   async verifyUser(verifiedUserPayload) {
     const { email, verificationCode } = verifiedUserPayload;
 
@@ -49,5 +63,19 @@ export class UsersService {
       status: HttpStatus.OK,
       message: 'User verified successfully',
     };
+  }
+
+  async getUsersByIds(ids) {
+    const users = await this.userModel
+      .find({
+        _id: {
+          $in: ids,
+        },
+      })
+      .catch(() => {
+        throw new InternalServerErrorException('Could not fetch users'); //
+      });
+
+    return users;
   }
 }

@@ -13,13 +13,20 @@ import { UtilService } from './util.service';
 import { EmailService } from './email/email.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './users/schema/user-schema';
+import {
+  Conversation,
+  ConversationSchema,
+} from './conversations/schema/conversation-schema';
 
 @Module({
   imports: [
     MongooseModule.forRoot(
       'mongodb+srv://dewmythdev:12345678abcdef@cluster0.xzp4w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
     ),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Conversation.name, schema: ConversationSchema },
+    ]),
   ],
   controllers: [
     AppController,
