@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 
 @Injectable()
 export class EmailService {
-  async sendVerificationEmail(username, code) {
+  async sendVerificationEmail(email, username, code) {
     // Using Gmail as the Email Server
     /**
      *
@@ -43,7 +43,7 @@ export class EmailService {
     // Constuct the email options
     const mailOptions = {
       from: '"Stealth Messaging App" <dewmyth.dev@gmail.com>',
-      to: 'dewmyth.dev@gmail.com',
+      to: `${email}`,
       subject: 'Email Verification',
       html: htmlTemplate,
     };

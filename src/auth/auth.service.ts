@@ -69,7 +69,11 @@ export class AuthService {
     // Send a verification email to the user with a generated CODE
     if (response._id) {
       await this._emailService
-        .sendVerificationEmail(finalUser.userName, finalUser.verificationCode)
+        .sendVerificationEmail(
+          finalUser.email,
+          finalUser.userName,
+          finalUser.verificationCode,
+        )
         .catch((err) => console.log(err));
     } else {
       throw new InternalServerErrorException(
