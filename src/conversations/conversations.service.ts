@@ -146,4 +146,20 @@ export class ConversationsService {
       message: 'Conversation unlocked successfully',
     };
   }
+
+  async deleteConversation(conversationId: string) {
+    const shouldDeleteConversation =
+      await this.conversationModel.findById(conversationId);
+
+    if (shouldDeleteConversation.isActive == false) {
+      throw new BadRequestException('Conversation is already disabled');
+    }
+
+    await shouldDeleteConversation.updateOne({ isActive: false });
+
+    return {
+      success: true,
+      message: 'Conversation deleted successfully',
+    };
+  }
 }

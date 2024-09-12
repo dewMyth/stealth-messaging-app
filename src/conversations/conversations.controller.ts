@@ -24,4 +24,9 @@ export class ConversationsController {
   unlockConversation(@Body() unlockCredentials) {
     return this.conversationsService.unlockConversation(unlockCredentials);
   }
+
+  @Post('delete-conversation/:conversationId')
+  deleteConversation(@Param('conversationId') conversationId) {
+    return this.conversationsService.deleteConversation(conversationId);
+  }
 }
