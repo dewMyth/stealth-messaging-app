@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 
 @Controller('messages')
@@ -13,5 +13,10 @@ export class MessagesController {
   @Post('create-message')
   createMessage(@Body() messagePayload) {
     return this.messageService.createMessage(messagePayload);
+  }
+
+  @Get('get-all-messages-by-conversation/:conversationId')
+  getAllMessagesByConversation(@Param('conversationId') conversationId) {
+    return this.messageService.getAllMessagesByConversation(conversationId);
   }
 }

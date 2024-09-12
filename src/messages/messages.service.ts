@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { MessageTypes } from 'src/types';
 import { Message } from './schema/message-schema';
@@ -168,5 +172,30 @@ export class MessagesService {
     console.log(
       `Stop Disabling passed LIMITED_VIEW_TIME message activity at ${currentTime.toString()}`,
     );
+  }
+
+  async getAllMessagesByConversation(conversationdId) {
+    const allMessages = await this.messageModel
+      .find(
+        {
+          conversationId: conversationdId,
+        },
+        {},
+        {
+          sort: { createdAt: -1 },
+        },
+      )
+      .catch(() => {
+        throw new InternalServerErrorException('Could not fetch messages');
+      });
+
+    if (allMessages.length == 0) {
+      throw new BadRequestException('No messages found');
+    }
+
+    return {
+      success: true,
+      messages: allMessages,
+    };
   }
 }

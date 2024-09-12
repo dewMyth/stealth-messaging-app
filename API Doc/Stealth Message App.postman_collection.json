@@ -253,6 +253,14 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Get All messages of a Conversation",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	]
 }
