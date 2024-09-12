@@ -52,6 +52,7 @@ export class ConversationsService {
     const newConversation = {
       members: members,
       conversationPIN: this._utilService.generateSixDigitCode(),
+      isActive: true,
     };
 
     const newConversationResponse = await this.conversationModel
@@ -88,6 +89,7 @@ export class ConversationsService {
     let convList = await this.conversationModel
       .find({
         members: { $in: [id] },
+        isActive: true,
       })
       .catch((error) => {
         throw new InternalServerErrorException(
@@ -107,6 +109,7 @@ export class ConversationsService {
     convList.forEach((conv) => {
       cleanedConvList.push({
         _id: conv._id,
+        isActive: conv.isActive,
         members: conv.members,
       });
     });
