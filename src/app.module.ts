@@ -17,6 +17,9 @@ import {
   Conversation,
   ConversationSchema,
 } from './conversations/schema/conversation-schema';
+import { Message, MessageSchema } from './messages/schema/message-schema';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleTasksService } from './schedule-tasks.service';
 
 @Module({
   imports: [
@@ -26,7 +29,9 @@ import {
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Conversation.name, schema: ConversationSchema },
+      { name: Message.name, schema: MessageSchema },
     ]),
+    ScheduleModule.forRoot(),
   ],
   controllers: [
     AppController,
@@ -43,6 +48,7 @@ import {
     AuthService,
     UtilService,
     EmailService,
+    ScheduleTasksService,
   ],
 })
 export class AppModule {}
