@@ -14,4 +14,9 @@ export class UsersController {
   verifyUser(@Body() verifiedUserPayload) {
     return this.userService.verifyUser(verifiedUserPayload);
   }
+
+  @Get('get-all-users')
+  getAllUsers() {
+    return this.userService.getAllUsers();
+  }
 }
