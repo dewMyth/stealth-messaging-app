@@ -103,6 +103,7 @@ export class MessagesService {
       status: true,
       message: 'Message saved successfully',
       message_id: messageSavedResponse._id,
+      conversationId: messageSavedResponse.conversationId, //
     };
   }
 
@@ -182,7 +183,7 @@ export class MessagesService {
         },
         {},
         {
-          sort: { createdAt: -1 },
+          sort: { createdAt: 1 },
         },
       )
       .catch(() => {
