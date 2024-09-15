@@ -52,6 +52,7 @@ export class ConversationsService {
     const newConversation = {
       members: members,
       conversationPIN: this._utilService.generateSixDigitCode(),
+      isActive: true,
     };
 
     const newConversationResponse = await this.conversationModel
@@ -88,6 +89,7 @@ export class ConversationsService {
     let convList = await this.conversationModel
       .find({
         members: { $in: [id] },
+        isActive: true,
       })
       .catch((error) => {
         throw new InternalServerErrorException(
@@ -107,6 +109,7 @@ export class ConversationsService {
     convList.forEach((conv) => {
       cleanedConvList.push({
         _id: conv._id,
+        isActive: conv.isActive,
         members: conv.members,
       });
     });
@@ -141,6 +144,22 @@ export class ConversationsService {
       success: true,
       isUnlocked: true,
       message: 'Conversation unlocked successfully',
+    };
+  }
+
+  async deleteConversation(conversationId: string) {
+    const shouldDeleteConversation =
+      await this.conversationModel.findById(conversationId);
+
+    if (shouldDeleteConversation.isActive == false) {
+      throw new BadRequestException('Conversation is already disabled');
+    }
+
+    await shouldDeleteConversation.updateOne({ isActive: false });
+
+    return {
+      success: true,
+      message: 'Conversation deleted successfully',
     };
   }
 }

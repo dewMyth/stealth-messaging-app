@@ -78,4 +78,14 @@ export class UsersService {
 
     return users;
   }
+
+  async getAllUsers() {
+    const users = await this.userModel.find().catch((err) => {
+      throw new InternalServerErrorException(
+        `Failed to fetch users: ${err.message}`,
+      );
+    });
+
+    return users;
+  }
 }

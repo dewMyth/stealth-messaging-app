@@ -10,6 +10,9 @@ export class Conversation {
 
   @Prop()
   conversationPIN: string;
+
+  @Prop()
+  isActive: boolean = true;
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);
