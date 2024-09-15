@@ -49,9 +49,37 @@ export class ConversationsService {
       );
     }
 
+    // Check whether the conversation with those members already exists
+    const existingConversation = await this.conversationModel
+      .findOne({
+        members: { $all: members },
+        isActive: true,
+      })
+      .catch((err) => {
+        throw new InternalServerErrorException(
+          `Error while finding existing conversation. Reason: ${err.message}`,
+        );
+      });
+
+    if (existingConversation) {
+      // Check if conversation is removed, then re-enable
+      if (existingConversation.isRemoved) {
+        existingConversation.isActive = true;
+        existingConversation.isRemoved = false;
+        await existingConversation.save();
+        return {
+          success: true,
+          message: `Conversation found earlier. Re-Enabled it successfully!`,
+        };
+      } else {
+        throw new Error('Conversation already exists');
+      }
+    }
+
     const newConversation = {
       members: members,
       conversationPIN: this._utilService.generateSixDigitCode(),
+      isRemoved: false,
       isActive: true,
     };
 
@@ -90,6 +118,7 @@ export class ConversationsService {
       .find({
         members: { $in: [id] },
         isActive: true,
+        isRemoved: false,
       })
       .catch((error) => {
         throw new InternalServerErrorException(
@@ -155,11 +184,27 @@ export class ConversationsService {
       throw new BadRequestException('Conversation is already disabled');
     }
 
-    await shouldDeleteConversation.updateOne({ isActive: false });
+    await this.conversationModel.findByIdAndUpdate(
+      shouldDeleteConversation._id,
+      { isRemoved: true },
+      { new: true },
+    );
 
     return {
       success: true,
       message: 'Conversation deleted successfully',
     };
+  }
+
+  async getDeletedConversations(userId: string) {
+    const deletedConversations = await this.conversationModel
+      .find({ members: { $in: [userId] }, isRemoved: true })
+      .catch((error) => {
+        throw new InternalServerErrorException(
+          `Failed to fetch deleted conversations for user => ${userId}: Reason : ${error.message}`,
+        );
+      });
+
+    return deletedConversations;
   }
 }

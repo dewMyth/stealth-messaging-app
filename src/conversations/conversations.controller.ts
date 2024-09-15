@@ -25,8 +25,14 @@ export class ConversationsController {
     return this.conversationsService.unlockConversation(unlockCredentials);
   }
 
-  @Post('delete-conversation/:conversationId')
-  deleteConversation(@Param('conversationId') conversationId) {
+  @Post('delete-conversation')
+  deleteConversation(@Body() data) {
+    const { conversationId } = data;
     return this.conversationsService.deleteConversation(conversationId);
+  }
+
+  @Get('deleted-conversations/:userId')
+  getDeletedConversations(@Param('userId') userId) {
+    return this.conversationsService.getDeletedConversations(userId);
   }
 }
