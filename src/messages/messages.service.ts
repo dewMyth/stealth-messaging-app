@@ -108,12 +108,13 @@ export class MessagesService {
   }
 
   async updateMessageActivity() {
-    const currentTime = Date.now();
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    console.log('Current Time: ' + typeof currentTime);
+    console.log('hardcoded', 1726395352);
 
     // Disable the SELF_DESTRUCT_TIMED messages
-    console.log(
-      `Start updating SELF_DESTRUCT_TIMED message activity at ${currentTime.toString()}`,
-    );
+
     await this.messageModel.updateMany(
       {
         isActive: true,
@@ -122,27 +123,26 @@ export class MessagesService {
       },
       { isActive: false },
     );
-    console.log(
-      `End updating Self destruct message activity at ${currentTime.toString()}`,
-    );
 
     // Enable the LIMITED_VIEW_TIME messages if currentTime is within the time limit
     console.log(
       `Start Enabling eligible LIMITED_VIEW_TIME message activity at ${currentTime.toString()}`,
     );
     const ennbleLIMITED_VIEW_TIME = await this.messageModel.find({
+      'messageType.messageFunc': 'LIMITED_VIEW_TIME',
       isActive: false,
-      'messageType.messageFunc': MessageTypes.LIMITED_VIEW_TIME,
-      'messageType.funcAttributes.from': { $lte: currentTime },
+      'messageType.funcAttributes.from': { $lte: 1726395352 },
+      'messageType.funcAttributes.to': { $gte: 1726395352 },
     });
     console.log(
       `Enabling LIMITED_VIEW_TIME will be eligible for ${ennbleLIMITED_VIEW_TIME.length} records.`,
     );
     await this.messageModel.updateMany(
       {
+        'messageType.messageFunc': 'LIMITED_VIEW_TIME',
         isActive: false,
-        'messageType.messageFunc': MessageTypes.LIMITED_VIEW_TIME,
         'messageType.funcAttributes.from': { $lte: currentTime },
+        'messageType.funcAttributes.to': { $gte: currentTime },
       },
       { isActive: true },
     );
