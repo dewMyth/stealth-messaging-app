@@ -7,10 +7,19 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/user-schema';
 import { Model } from 'mongoose';
+import { LogActivity } from 'src/logs/schema/logs.schema';
+import { LogActivityService } from 'src/logs/logs.service';
+import { ConversationsService } from 'src/conversations/conversations.service';
+import { LogTypes } from 'src/types';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name)
+    private userModel: Model<User>,
+    private _logActivityService: LogActivityService,
+    private _conversationService: ConversationsService,
+  ) {}
 
   getUser(): string {
     return 'User is Dewmith';
@@ -59,6 +68,12 @@ export class UsersService {
       await user.save();
     }
 
+    this._logActivityService.createLog(
+      user._id,
+      'User email is verified',
+      LogTypes.USER_VERIFIED,
+    );
+
     return {
       status: HttpStatus.OK,
       message: 'User verified successfully',
@@ -85,6 +100,18 @@ export class UsersService {
         `Failed to fetch users: ${err.message}`,
       );
     });
+
+    return users;
+  }
+
+  async getUsersOfAConversation(conversationdId) {
+    const conversation =
+      await this._conversationService.getConversation(conversationdId);
+
+    const userIds = conversation.members;
+
+    // Get users with the conversation
+    const users = await this.getUsersByIds(userIds);
 
     return users;
   }

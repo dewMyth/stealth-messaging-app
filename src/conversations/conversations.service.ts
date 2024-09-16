@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -9,6 +11,10 @@ import { UtilService } from 'src/util.service';
 import { Model } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
 import { EmailService } from 'src/email/email.service';
+import { LogActivity } from 'src/logs/schema/logs.schema';
+import { User } from 'src/users/schema/user-schema';
+import { LogActivityService } from 'src/logs/logs.service';
+import { LogTypes } from 'src/types';
 
 @Injectable()
 export class ConversationsService {
@@ -16,8 +22,10 @@ export class ConversationsService {
     @InjectModel(Conversation.name)
     private conversationModel: Model<Conversation>,
     private _utilService: UtilService,
+    @Inject(forwardRef(() => UsersService))
     private _usersService: UsersService,
     private _emailService: EmailService,
+    private _logActivityService: LogActivityService,
   ) {}
 
   async getConversation(id) {
@@ -37,6 +45,7 @@ export class ConversationsService {
       _id: conversation._id,
       members: conversation.members,
       conversationPIN: conversation.conversationPIN,
+      isRemoved: conversation.isRemoved,
     };
   }
 
@@ -90,6 +99,17 @@ export class ConversationsService {
       });
 
     if (newConversationResponse._id) {
+      // Log the Activity
+      members.map(async (member) => {
+        const otherUserId = members.find((m) => m !== member);
+        const otherUser = await this._usersService.getUserById(otherUserId);
+        this._logActivityService.createLog(
+          member,
+          `Started a conversation with ${otherUser.userName}`,
+          LogTypes.STARTED_CONVERSATION,
+        );
+      });
+
       // Send Email to both users
 
       // Get Emails of both users
@@ -151,7 +171,7 @@ export class ConversationsService {
   }
 
   async unlockConversation(conversationCredentials) {
-    const { conversationId, enteredPIN } = conversationCredentials;
+    const { conversationId, enteredPIN, userId } = conversationCredentials;
 
     if (!conversationId || !enteredPIN) {
       throw new BadRequestException(
@@ -165,9 +185,41 @@ export class ConversationsService {
       throw new BadRequestException('Conversation not found');
     }
 
+    const users =
+      await this._usersService.getUsersOfAConversation(conversationId);
+
+    // Attempted user
+    const attemptedUser = users.find((u) => u._id.toString() == userId);
+
     if (conversation.conversationPIN! !== enteredPIN) {
+      users.map(async (user, index) => {
+        this._logActivityService.createLog(
+          user._id,
+          `An attempt made by ${attemptedUser.userName} was failed to unlock the conversation between ${[users.map((user) => user.userName)]}`,
+          LogTypes.UNLOCKED_CONVERSATION_ATTEMP_FAIL,
+        );
+
+        const otherUser = users[1 - index];
+
+        // Send Email to both users
+        await this._emailService.conversationUnlockFailAlertEmail(
+          user.email,
+          user.userName,
+          attemptedUser.userName,
+          otherUser.userName,
+        );
+      });
+
       throw new BadRequestException('Incorrect PIN entered');
     }
+
+    users.map(async (user, index) => {
+      this._logActivityService.createLog(
+        user._id,
+        `Conversation between ${[users.map((user) => user.userName)]} is unlocked by ${attemptedUser.userName}`,
+        LogTypes.UNLOCKED_CONVERSATION_ATTEMP_FAIL,
+      );
+    });
 
     return {
       success: true,
@@ -176,7 +228,9 @@ export class ConversationsService {
     };
   }
 
-  async deleteConversation(conversationId: string) {
+  async deleteConversation(data) {
+    const { conversationId, userId } = data;
+
     const shouldDeleteConversation =
       await this.conversationModel.findById(conversationId);
 
@@ -188,6 +242,17 @@ export class ConversationsService {
       shouldDeleteConversation._id,
       { isRemoved: true },
       { new: true },
+    );
+
+    const userWhoDeleted = await this._usersService.getUserById(userId);
+    const usersInConversation =
+      await this._usersService.getUsersOfAConversation(conversationId);
+
+    // Add Log
+    await this._logActivityService.createLog(
+      userId,
+      `Conversation between ${usersInConversation.map((u) => u.userName)} has been deleted by the user ${userWhoDeleted.userName}`,
+      LogTypes.DELETED_CONVERSATION,
     );
 
     return {
@@ -206,5 +271,46 @@ export class ConversationsService {
       });
 
     return deletedConversations;
+  }
+
+  async recoverDeletedConversationsById(data) {
+    const { conversationId, userId } = data;
+
+    const deletedConversation = await this.getConversation(conversationId);
+
+    if (!deletedConversation && deletedConversation.isRemoved == true) {
+      throw new BadRequestException('No deleted Conversation not found');
+    }
+
+    // set isRemove : false
+    const response = await this.conversationModel
+      .findByIdAndUpdate(
+        deletedConversation._id,
+        { isRemoved: false },
+        { new: true },
+      )
+      .catch((error) => {
+        throw new InternalServerErrorException(
+          `Failed to recover deleted conversation: ${error.message}`,
+        );
+      });
+
+    // Log the recovered conversation
+
+    const userWhoRecovered = await this._usersService.getUserById(userId);
+    const usersInRecoveredConversation =
+      await this._usersService.getUsersOfAConversation(conversationId);
+
+    this._logActivityService.createLog(
+      userId,
+      `Conversation between ${usersInRecoveredConversation.map((u) => u.userName)} has been recovered by the user ${userWhoRecovered.userName}`,
+      LogTypes.RECOVERED_CONVERSATION,
+    );
+
+    return {
+      success: true,
+      message: 'Conversation recovered successfully',
+      recoveredConversation: response,
+    };
   }
 }

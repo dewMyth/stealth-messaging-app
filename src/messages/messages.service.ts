@@ -4,15 +4,19 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { MessageTypes } from 'src/types';
+import { LogTypes, MessageTypes } from 'src/types';
 import { Message } from './schema/message-schema';
 import { Model } from 'mongoose';
+import { LogActivityService } from 'src/logs/logs.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class MessagesService {
   constructor(
     @InjectModel(Message.name)
     private messageModel: Model<Message>,
+    private _logActivityService: LogActivityService,
+    private _usersService: UsersService,
   ) {}
 
   getMessage(): string {
@@ -51,17 +55,22 @@ export class MessagesService {
     let messageFunc = '';
     let isActive = true;
 
+    let logType;
+
     switch (messageType.messageFunc) {
       case 0: {
         messageFunc = MessageTypes.STANDARD;
+        logType = LogTypes.SENT_STANDARD_MESSAGE;
         break;
       }
       case 1: {
         messageFunc = MessageTypes.SELF_DESTRUCT_TIMED;
+        logType = LogTypes.SENT_SELF_DESTRUCT_TIMED_MESSAGE;
         break;
       }
       case 2: {
         messageFunc = MessageTypes.LIMITED_VIEW_TIME;
+        logType = LogTypes.SENT_LIMITED_VIEW_TIME_MESSAGE;
         const currentTime = Date.now();
         const { from, to } = messageType.funcAttributes;
 
@@ -98,6 +107,17 @@ export class MessagesService {
     if (!messageSavedResponse._id) {
       throw new Error('Failed to save the message');
     }
+
+    // Log the activity
+    const users =
+      await this._usersService.getUsersOfAConversation(conversationId);
+    const sentUser = users.find((user) => user._id.toString() == senderId);
+    const otherUser = users.find((user) => user._id.toString() !== senderId);
+    this._logActivityService.createLog(
+      senderId,
+      `${sentUser.userName} has sent a ${messageFunc} message to ${otherUser.userName}`,
+      logType,
+    );
 
     return {
       status: true,

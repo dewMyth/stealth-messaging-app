@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Http2ServerResponse } from 'http2';
 import { Model } from 'mongoose';
 import { EmailService } from 'src/email/email.service';
+import { LogActivityService } from 'src/logs/logs.service';
+import { LogTypes } from 'src/types';
 import { User } from 'src/users/schema/user-schema';
 import { UsersService } from 'src/users/users.service';
 import { UtilService } from 'src/util.service';
@@ -20,6 +22,7 @@ export class AuthService {
     private _utilService: UtilService,
     private _emailService: EmailService,
     private _userService: UsersService,
+    private _logActivityService: LogActivityService,
     @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
@@ -75,6 +78,12 @@ export class AuthService {
           finalUser.verificationCode,
         )
         .catch((err) => console.log(err));
+
+      await this._logActivityService.createLog(
+        response._id,
+        `User ${finalUser.userName}'s account is created`,
+        LogTypes.USER_LOGIN,
+      );
     } else {
       throw new InternalServerErrorException(
         `Error while sending verification email for user - ${finalUser.userName} : ${finalUser.email}`,
@@ -101,6 +110,12 @@ export class AuthService {
     if (!isMatched) {
       throw new BadRequestException('Incorrect password');
     }
+
+    await this._logActivityService.createLog(
+      user._id,
+      `User : ${user.userName} is logged in successfully`,
+      LogTypes.USER_LOGIN,
+    );
 
     return {
       status: HttpStatus.OK,

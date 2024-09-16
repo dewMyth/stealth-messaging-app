@@ -27,12 +27,16 @@ export class ConversationsController {
 
   @Post('delete-conversation')
   deleteConversation(@Body() data) {
-    const { conversationId } = data;
-    return this.conversationsService.deleteConversation(conversationId);
+    return this.conversationsService.deleteConversation(data);
   }
 
   @Get('deleted-conversations/:userId')
   getDeletedConversations(@Param('userId') userId) {
     return this.conversationsService.getDeletedConversations(userId);
+  }
+
+  @Post('recover-deleted-conversations')
+  recoverTheDeletedConversation(@Body() data) {
+    return this.conversationsService.recoverDeletedConversationsById(data);
   }
 }
