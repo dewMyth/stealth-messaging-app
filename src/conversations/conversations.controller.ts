@@ -25,8 +25,25 @@ export class ConversationsController {
     return this.conversationsService.unlockConversation(unlockCredentials);
   }
 
-  @Post('delete-conversation/:conversationId')
-  deleteConversation(@Param('conversationId') conversationId) {
-    return this.conversationsService.deleteConversation(conversationId);
+  @Post('delete-conversation')
+  deleteConversation(@Body() data) {
+    return this.conversationsService.deleteConversation(data);
+  }
+
+  @Get('deleted-conversations/:userId')
+  getDeletedConversations(@Param('userId') userId) {
+    return this.conversationsService.getDeletedConversations(userId);
+  }
+
+  @Post('recover-deleted-conversations')
+  recoverTheDeletedConversation(@Body() data) {
+    return this.conversationsService.recoverDeletedConversationsById(data);
+  }
+
+  @Post('request-unlock-deleted-conversations')
+  requestRecoverTheDeletedConversation(@Body() data) {
+    return this.conversationsService.sendRequestToRecoverDeletedConversation(
+      data,
+    );
   }
 }

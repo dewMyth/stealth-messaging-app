@@ -13,6 +13,9 @@ export class Conversation {
 
   @Prop()
   isActive: boolean = true;
+
+  @Prop()
+  isRemoved?: boolean = false;
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);

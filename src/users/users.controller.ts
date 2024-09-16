@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { ConversationsService } from 'src/conversations/conversations.service';
 
 @Controller('users')
 export class UsersController {
@@ -18,5 +19,10 @@ export class UsersController {
   @Get('get-all-users')
   getAllUsers() {
     return this.userService.getAllUsers();
+  }
+
+  @Get('get-users-of-conversation/:conversationId')
+  getUsersOfConversation(@Param('conversationId') conversationId) {
+    return this.userService.getUsersOfAConversation(conversationId);
   }
 }

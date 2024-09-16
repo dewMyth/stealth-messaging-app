@@ -20,6 +20,9 @@ import {
 import { Message, MessageSchema } from './messages/schema/message-schema';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksService } from './schedule-tasks.service';
+import { LogActivity, LogActivitySchema } from './logs/schema/logs.schema';
+import { LogActivityService } from './logs/logs.service';
+import { LogsController } from './logs/logs.controller';
 
 @Module({
   imports: [
@@ -30,6 +33,7 @@ import { ScheduleTasksService } from './schedule-tasks.service';
       { name: User.name, schema: UserSchema },
       { name: Conversation.name, schema: ConversationSchema },
       { name: Message.name, schema: MessageSchema },
+      { name: LogActivity.name, schema: LogActivitySchema },
     ]),
     ScheduleModule.forRoot(),
   ],
@@ -39,6 +43,7 @@ import { ScheduleTasksService } from './schedule-tasks.service';
     AuthController,
     ConversationsController,
     MessagesController,
+    LogsController,
   ],
   providers: [
     AppService,
@@ -49,6 +54,7 @@ import { ScheduleTasksService } from './schedule-tasks.service';
     UtilService,
     EmailService,
     ScheduleTasksService,
+    LogActivityService,
   ],
 })
 export class AppModule {}
