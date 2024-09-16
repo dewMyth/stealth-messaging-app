@@ -22,6 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksService } from './schedule-tasks.service';
 import { LogActivity, LogActivitySchema } from './logs/schema/logs.schema';
 import { LogActivityService } from './logs/logs.service';
+import { LogsController } from './logs/logs.controller';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { LogActivityService } from './logs/logs.service';
     AuthController,
     ConversationsController,
     MessagesController,
+    LogsController,
   ],
   providers: [
     AppService,

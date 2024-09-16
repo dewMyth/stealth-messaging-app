@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        color: #333;
+      }
+      .content {
+        font-size: 16px;
+        line-height: 1.5;
+        color: #555;
+      }
+      .verification-code {
+        font-size: 24px;
+        font-weight: bold;
+        color: #007bff;
+        text-align: center;
+        margin: 20px 0;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        font-size: 14px;
+        color: #777;
+      }
+      .footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Email Verification</h1>
+      </div>
+      <div class="content">
+        <p>Hi [RECIPIENT_NAME],</p>
+        <p>
+          To recover the conversation you have deleted, please use the following
+          6-digit verification code:
+        </p>
+        <div class="verification-code">[VERIFICATION_CODE]</div>
+        <p>
+          Use the link <a href="[URL]">here</a> to unlock, and please use the
+          same 6-digit verification code here to unlock the conversations in
+          future.
+        </p>
+        <p>
+          If you did not request this verification code, please ignore this
+          email or contact our support team.
+        </p>
+        <p>Best regards,<br />Stealth Messaging App Team</p>
+      </div>
+      <div class="footer">
+        <p>&copy; 2024 Stealth Messaging App Team. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

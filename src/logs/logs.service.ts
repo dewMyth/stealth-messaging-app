@@ -2,16 +2,32 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { LogActivity } from './schema/logs.schema';
 import { Model } from 'mongoose';
+import { UtilService } from 'src/util.service';
 
 @Injectable()
 export class LogActivityService {
   constructor(
     @InjectModel(LogActivity.name)
     private logActivityModel: Model<LogActivity>,
+    private _utilService: UtilService,
   ) {}
 
   async getAllLogsByUser(userId) {
-    return await this.logActivityModel.find({ userId }).exec();
+    const logs = await this.logActivityModel
+      .find(
+        { userId },
+        {},
+        {
+          sort: { time: -1 }, // sort in descending order of time
+        },
+      )
+      .exec();
+
+    if (logs.length == 0) {
+      return { message: 'No logs found for this user' };
+    }
+
+    return logs;
   }
 
   // logData
@@ -20,7 +36,7 @@ export class LogActivityService {
       userId: userId,
       message: message,
       type: type,
-      time: new Date().toISOString(),
+      time: this._utilService.converToFriendlyDate(new Date().toISOString()),
     });
     return await newLog.save();
   }

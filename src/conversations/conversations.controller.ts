@@ -39,4 +39,11 @@ export class ConversationsController {
   recoverTheDeletedConversation(@Body() data) {
     return this.conversationsService.recoverDeletedConversationsById(data);
   }
+
+  @Post('request-unlock-deleted-conversations')
+  requestRecoverTheDeletedConversation(@Body() data) {
+    return this.conversationsService.sendRequestToRecoverDeletedConversation(
+      data,
+    );
+  }
 }

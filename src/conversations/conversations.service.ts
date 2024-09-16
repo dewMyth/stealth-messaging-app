@@ -16,6 +16,8 @@ import { User } from 'src/users/schema/user-schema';
 import { LogActivityService } from 'src/logs/logs.service';
 import { LogTypes } from 'src/types';
 
+const crypto = require('crypto');
+
 @Injectable()
 export class ConversationsService {
   constructor(
@@ -150,6 +152,7 @@ export class ConversationsService {
       return {
         success: true,
         message: 'No conversations found for this user',
+        conversations: [],
       };
     }
 
@@ -217,7 +220,7 @@ export class ConversationsService {
       this._logActivityService.createLog(
         user._id,
         `Conversation between ${[users.map((user) => user.userName)]} is unlocked by ${attemptedUser.userName}`,
-        LogTypes.UNLOCKED_CONVERSATION_ATTEMP_FAIL,
+        LogTypes.UNLOCKED_CONVERSATION,
       );
     });
 
@@ -270,16 +273,72 @@ export class ConversationsService {
         );
       });
 
+    if (deletedConversations.length == 0) {
+      return [];
+    }
+
     return deletedConversations;
   }
 
-  async recoverDeletedConversationsById(data) {
+  async sendRequestToRecoverDeletedConversation(data) {
     const { conversationId, userId } = data;
+
+    const shouldRecoverDeletedConversation =
+      await this.getConversation(conversationId);
+
+    if (
+      !shouldRecoverDeletedConversation ||
+      shouldRecoverDeletedConversation.isRemoved == false
+    ) {
+      throw new BadRequestException('No deleted Conversation not found');
+    }
+
+    const reUnlockCode = this._utilService.generateSixDigitCode();
+
+    // Store the re-unlock code in the conversation
+    const response = await this.conversationModel.findByIdAndUpdate(
+      conversationId,
+      { conversationPIN: reUnlockCode },
+      { new: true },
+    );
+
+    if (!response._id) {
+      throw new InternalServerErrorException(
+        'Failed to update conversation PIN',
+      );
+    }
+
+    // Send email
+    // Create a random id
+    const token = crypto.randomBytes(10).toString('hex');
+    const link = `http://localhost:3000/recover-conversation/${token}?conversationId=${conversationId}`;
+
+    const user = await this._usersService.getUserById(userId);
+
+    await this._emailService.conversationRecoverEmail(
+      user.email,
+      reUnlockCode,
+      link,
+    );
+
+    return {
+      success: true,
+      message:
+        'Request sent successfully. Check your email for the recovery link',
+    };
+  }
+
+  async recoverDeletedConversationsById(data) {
+    const { conversationId, userId, verificationCode } = data;
 
     const deletedConversation = await this.getConversation(conversationId);
 
     if (!deletedConversation && deletedConversation.isRemoved == true) {
       throw new BadRequestException('No deleted Conversation not found');
+    }
+
+    if (verificationCode !== deletedConversation.conversationPIN) {
+      throw new BadRequestException('Incorrect verification code!');
     }
 
     // set isRemove : false
