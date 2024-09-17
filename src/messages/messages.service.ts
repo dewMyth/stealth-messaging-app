@@ -9,6 +9,7 @@ import { Message } from './schema/message-schema';
 import { Model } from 'mongoose';
 import { LogActivityService } from 'src/logs/logs.service';
 import { UsersService } from 'src/users/users.service';
+import { UtilService } from 'src/util.service';
 
 @Injectable()
 export class MessagesService {
@@ -17,6 +18,7 @@ export class MessagesService {
     private messageModel: Model<Message>,
     private _logActivityService: LogActivityService,
     private _usersService: UsersService,
+    private _utilService: UtilService,
   ) {}
 
   getMessage(): string {
@@ -218,5 +220,182 @@ export class MessagesService {
       success: true,
       messages: allMessages,
     };
+  }
+
+  /**
+   * 
+   *   const dataset = [
+    {
+      std: 59,
+      lvt: 57,
+      sd: 86,
+      date: "9/17",
+    },
+    {
+      std: 50,
+      lvt: 52,
+      sd: 78,
+      date: "9/16",
+    },
+    {
+      std: 47,
+      lvt: 53,
+      sd: 106,
+      date: "9/15",
+    },
+  ];
+   */
+  async getMessagesForLastThreeDays(userId) {
+    const {
+      finalstartOfToday,
+      finalEndOfToday,
+      fianlStartOfYesterday,
+      fianlEndOfYesterday,
+      fianlStartOfTwoDaysAgo,
+      fianlEndOfTwoDaysAgo,
+    } = this._utilService.getPreviousDatesStartAndEndTimes();
+
+    const getAllTodayMessages = await this.messageModel
+      .find(
+        {
+          senderId: userId,
+          createdAt: {
+            $gte: finalstartOfToday,
+            $lte: finalEndOfToday,
+          },
+        },
+        {},
+        {
+          sort: { createdAt: 1 },
+        },
+      )
+      .catch((err) => {
+        throw new InternalServerErrorException(
+          `Failed to fetch messages for today. Reason => ${JSON.stringify(err)}`,
+        );
+      });
+
+    const getStdMsgsToday = await this.countMessageByType(
+      getAllTodayMessages,
+      MessageTypes.STANDARD,
+    );
+    const getLvtMsgsToday = await this.countMessageByType(
+      getAllTodayMessages,
+      MessageTypes.LIMITED_VIEW_TIME,
+    );
+    const getSdMsgsToday = await this.countMessageByType(
+      getAllTodayMessages,
+      MessageTypes.SELF_DESTRUCT_TIMED,
+    );
+
+    const getAllYesterDayMessages = await this.messageModel
+      .find(
+        {
+          senderId: userId,
+          createdAt: {
+            $gte: fianlStartOfYesterday,
+            $lte: fianlEndOfYesterday,
+          },
+        },
+        {},
+        {
+          sort: { createdAt: 1 },
+        },
+      )
+      .catch((err) => {
+        throw new InternalServerErrorException(
+          `Failed to fetch messages for yesterday. Reason => ${JSON.stringify(err)}`,
+        );
+      });
+
+    const getStdMsgsYesterday = await this.countMessageByType(
+      getAllYesterDayMessages,
+      MessageTypes.STANDARD,
+    );
+    const getLvtMsgsYesterday = await this.countMessageByType(
+      getAllYesterDayMessages,
+      MessageTypes.LIMITED_VIEW_TIME,
+    );
+    const getSdMsgsYesterday = await this.countMessageByType(
+      getAllYesterDayMessages,
+      MessageTypes.SELF_DESTRUCT_TIMED,
+    );
+
+    const getAllTwoDaysAgoMessages = await this.messageModel
+      .find(
+        {
+          senderId: userId,
+          createdAt: {
+            $gte: fianlStartOfTwoDaysAgo,
+            $lte: fianlEndOfTwoDaysAgo,
+          },
+        },
+        {},
+        {
+          sort: { createdAt: 1 },
+        },
+      )
+      .catch((err) => {
+        throw new InternalServerErrorException(
+          `Failed to fetch messages for two days ago. Reason => ${JSON.stringify(err)}`,
+        );
+      });
+
+    const getStdMsgsTwoDaysAgo = await this.countMessageByType(
+      getAllTwoDaysAgoMessages,
+      MessageTypes.STANDARD,
+    );
+    const getLvtMsgsTwoDaysAgo = await this.countMessageByType(
+      getAllTwoDaysAgoMessages,
+      MessageTypes.LIMITED_VIEW_TIME,
+    );
+    const getSdMsgsTwoDaysAgo = await this.countMessageByType(
+      getAllTwoDaysAgoMessages,
+      MessageTypes.SELF_DESTRUCT_TIMED,
+    );
+
+    // today as mm/dd
+    const now = new Date();
+    const todayDate = now.getDate();
+    const todayMonth = now.getMonth() + 1;
+    const todayMonthDateFormatted = `${todayMonth}/${todayDate}`;
+
+    // yesterday as mm/dd
+    const yesterdayDate = now.getDate() - 1;
+    const yesterdayMonth = now.getMonth() + 1;
+    const yesterdayMonthDateFormatted = `${yesterdayMonth}/${yesterdayDate}`;
+
+    const previousDate = now.getDate() - 2;
+    const previousMonth = now.getMonth() + 1;
+    const previousMonthDateFormatted = `${previousMonth}/${previousDate}`;
+
+    return [
+      {
+        date: todayMonthDateFormatted,
+        std: getStdMsgsToday,
+        lvt: getLvtMsgsToday,
+        sd: getSdMsgsToday,
+      },
+      {
+        date: yesterdayMonthDateFormatted,
+        std: getStdMsgsYesterday,
+        lvt: getLvtMsgsYesterday,
+        sd: getSdMsgsYesterday,
+      },
+      {
+        date: previousMonthDateFormatted,
+        std: getStdMsgsTwoDaysAgo,
+        lvt: getLvtMsgsTwoDaysAgo,
+        sd: getSdMsgsTwoDaysAgo,
+      },
+    ];
+  }
+
+  async countMessageByType(data, type) {
+    const messages = data.filter(
+      (message) => message.messageType.messageFunc == type,
+    );
+
+    return messages?.length > 0 ? messages.length : 0;
   }
 }

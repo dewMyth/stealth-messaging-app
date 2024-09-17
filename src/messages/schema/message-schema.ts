@@ -19,6 +19,9 @@ export class Message {
 
   @Prop({ type: Object }) // Use Object for an undefined structure
   messageType: Record<string, any>; // Define it as a record
+
+  @Prop()
+  createdAt: Date; // Add createdAt property for timestamp
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
