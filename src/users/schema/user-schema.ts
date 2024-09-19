@@ -19,6 +19,9 @@ export class User {
 
   @Prop()
   verificationCode: string;
+
+  @Prop()
+  isStealthMode: boolean = false;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

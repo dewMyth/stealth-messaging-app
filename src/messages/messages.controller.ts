@@ -19,4 +19,8 @@ export class MessagesController {
   getAllMessagesByConversation(@Param('conversationId') conversationId) {
     return this.messageService.getAllMessagesByConversation(conversationId);
   }
+  @Get('get-messages-for-last-three-days/:userId')
+  getMessagesForLastThreeDays(@Param('userId') userId) {
+    return this.messageService.getMessagesForLastThreeDays(userId);
+  }
 }
