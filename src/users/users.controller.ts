@@ -25,4 +25,9 @@ export class UsersController {
   getUsersOfConversation(@Param('conversationId') conversationId) {
     return this.userService.getUsersOfAConversation(conversationId);
   }
+
+  @Post('change-stealth-mode')
+  changeStealthModeByUserId(@Body() data) {
+    return this.userService.changeStealthModeByUserId(data);
+  }
 }

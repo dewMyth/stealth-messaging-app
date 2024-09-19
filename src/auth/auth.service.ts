@@ -59,6 +59,7 @@ export class AuthService {
       userName: newUser.userName,
       password: encryptedPassword,
       isVerified: false,
+      isStealthMode: false,
       verificationCode: sixDigitCode,
     };
 

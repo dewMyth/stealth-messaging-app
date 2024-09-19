@@ -115,4 +115,42 @@ export class UsersService {
 
     return users;
   }
+
+  async changeStealthModeByUserId(data) {
+    const { userId } = data;
+
+    const findUser = await this.userModel.findById(userId).catch((err) => {
+      throw new InternalServerErrorException(
+        `Failed to fetch user: ${err.message}`,
+      );
+    });
+
+    if (!findUser) {
+      throw new Error('User not found');
+    }
+
+    const response = await this.userModel
+      .updateOne(
+        { _id: userId },
+        { $set: { isStealthMode: !findUser.isStealthMode } },
+        { new: true },
+      )
+      .catch((err) => {
+        throw new InternalServerErrorException(
+          `Failed to change stealth mode: ${err.message}`,
+        );
+      });
+
+    if (!response) {
+      throw new Error('Failed to change stealth mode');
+    }
+
+    return {
+      status: HttpStatus.OK,
+      message:
+        response.modifiedCount !== 0
+          ? 'Stealth mode changed successfully'
+          : 'No changes made',
+    };
+  }
 }
