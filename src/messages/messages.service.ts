@@ -130,41 +130,26 @@ export class MessagesService {
   }
 
   async updateMessageActivity() {
+    // This function runs every 5 seconds and updates the message status according to it's type
     const currentTime = Math.floor(Date.now() / 1000);
 
-    console.log('Current Time: ' + typeof currentTime);
-    console.log('hardcoded', 1726395352);
-
     // Disable the SELF_DESTRUCT_TIMED messages
-
     await this.messageModel.updateMany(
       {
         isActive: true,
         'messageType.messageFunc': MessageTypes.SELF_DESTRUCT_TIMED,
-        'messageType.funcAttributes.to': { $lte: currentTime },
+        'messageType.funcAttributes.to': { $lte: currentTime }, // Less than or equal to current Time
       },
       { isActive: false },
     );
 
     // Enable the LIMITED_VIEW_TIME messages if currentTime is within the time limit
-    console.log(
-      `Start Enabling eligible LIMITED_VIEW_TIME message activity at ${currentTime.toString()}`,
-    );
-    const ennbleLIMITED_VIEW_TIME = await this.messageModel.find({
-      'messageType.messageFunc': 'LIMITED_VIEW_TIME',
-      isActive: false,
-      'messageType.funcAttributes.from': { $lte: 1726395352 },
-      'messageType.funcAttributes.to': { $gte: 1726395352 },
-    });
-    console.log(
-      `Enabling LIMITED_VIEW_TIME will be eligible for ${ennbleLIMITED_VIEW_TIME.length} records.`,
-    );
     await this.messageModel.updateMany(
       {
         'messageType.messageFunc': 'LIMITED_VIEW_TIME',
         isActive: false,
-        'messageType.funcAttributes.from': { $lte: currentTime },
-        'messageType.funcAttributes.to': { $gte: currentTime },
+        'messageType.funcAttributes.from': { $lte: currentTime }, // Less than or equal to current Time
+        'messageType.funcAttributes.to': { $gte: currentTime }, // Or Gretather than or equal to currentTime
       },
       { isActive: true },
     );
@@ -173,17 +158,6 @@ export class MessagesService {
     );
 
     // Disable the LIMITED_VIEW_TIME messages if currentTime is later than the time limit
-    console.log(
-      `Start Disabling passed LIMITED_VIEW_TIME message activity at ${currentTime.toString()}`,
-    );
-    const disableLIMITED_VIEW_TIME = await this.messageModel.find({
-      isActive: true,
-      'messageType.messageFunc': MessageTypes.LIMITED_VIEW_TIME,
-      'messageType.funcAttributes.to': { $lte: currentTime },
-    });
-    console.log(
-      `Disabling LIMITED_VIEW_TIME will be eligible for ${disableLIMITED_VIEW_TIME.length} records.`,
-    );
     await this.messageModel.updateMany(
       {
         isActive: true,
@@ -191,9 +165,6 @@ export class MessagesService {
         'messageType.funcAttributes.to': { $lte: currentTime },
       },
       { isActive: false },
-    );
-    console.log(
-      `Stop Disabling passed LIMITED_VIEW_TIME message activity at ${currentTime.toString()}`,
     );
   }
 

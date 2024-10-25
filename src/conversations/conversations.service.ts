@@ -198,7 +198,7 @@ export class ConversationsService {
       users.map(async (user, index) => {
         this._logActivityService.createLog(
           user._id,
-          `An attempt made by ${attemptedUser.userName} was failed to unlock the conversation between ${[users.map((user) => user.userName)]}`,
+          `An attempt made by ${attemptedUser?.userName} was failed to unlock the conversation between ${[users.map((user) => user.userName)]}`,
           LogTypes.UNLOCKED_CONVERSATION_ATTEMP_FAIL,
         );
 
@@ -208,7 +208,7 @@ export class ConversationsService {
         await this._emailService.conversationUnlockFailAlertEmail(
           user.email,
           user.userName,
-          attemptedUser.userName,
+          attemptedUser?.userName,
           otherUser.userName,
         );
       });
