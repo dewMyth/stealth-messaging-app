@@ -19,7 +19,7 @@ export class EmailService {
       host: 'smtp.gmail.com',
       port: 465,
       auth: {
-        user: 'dewmyth.dev@gmail.com', // Use any gmail
+        user: 'stealthmessageapp@gmail.com', // Use any gmail
         pass: 'qklm neni exwv lzgs', // Replace the app password created for your account
       },
     });
@@ -42,7 +42,7 @@ export class EmailService {
 
     // Constuct the email options
     const mailOptions = {
-      from: '"Stealth Messaging App" <dewmyth.dev@gmail.com>',
+      from: '"Stealth Messaging App" <steathmessagingapp@gmail.com>',
       to: `${email}`,
       subject: 'Email Verification',
       html: htmlTemplate,
@@ -71,7 +71,7 @@ export class EmailService {
       host: 'smtp.gmail.com',
       port: 465,
       auth: {
-        user: 'dewmyth.dev@gmail.com', // Use any gmail
+        user: 'stealthmessageapp@gmail.com', // Use any gmail
         pass: 'qklm neni exwv lzgs', // Replace the app password created for your account
       },
     });
@@ -95,7 +95,7 @@ export class EmailService {
 
     // Constuct the email options
     const mailOptions = {
-      from: '"Stealth Messaging App" <dewmyth.dev@gmail.com>',
+      from: '"Stealth Messaging App" <stealthmessageapp@gmail.com>',
       to: `${email}`,
       subject: 'Your Secure Conversation Unlock PIN for Stealth Messaging App',
       html: htmlTemplate,
@@ -129,7 +129,7 @@ export class EmailService {
       host: 'smtp.gmail.com',
       port: 465,
       auth: {
-        user: 'dewmyth.dev@gmail.com', // Use any gmail
+        user: 'stealthmessageapp@gmail.com', // Use any gmail
         pass: 'qklm neni exwv lzgs', // Replace the app password created for your account
       },
     });
@@ -153,7 +153,7 @@ export class EmailService {
 
     // Constuct the email options
     const mailOptions = {
-      from: '"Stealth Messaging App" <dewmyth.dev@gmail.com>',
+      from: '"Stealth Messaging App" <stealthmessageapp@gmail.com>',
       to: `${email}`,
       subject: 'Unlock attmept failed for Stealth Messaging App',
       html: htmlTemplate,
@@ -182,7 +182,7 @@ export class EmailService {
       host: 'smtp.gmail.com',
       port: 465,
       auth: {
-        user: 'dewmyth.dev@gmail.com', // Use any gmail
+        user: 'stealthmessageapp@gmail.com', // Use any gmail
         pass: 'qklm neni exwv lzgs', // Replace the app password created for your account
       },
     });
@@ -206,7 +206,7 @@ export class EmailService {
 
     // Constuct the email options
     const mailOptions = {
-      from: '"Stealth Messaging App" <dewmyth.dev@gmail.com>',
+      from: '"Stealth Messaging App" <stealthmessageapp@gmail.com>',
       to: `${email}`,
       subject:
         'Unlock PIN for the Recovery Conversation of Stealth Messaging App',
